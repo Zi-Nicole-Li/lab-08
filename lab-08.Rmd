@@ -1,56 +1,96 @@
 ---
 title: "Lab 08 - University of Edinburgh Art Collection"
-author: "Insert your name here"
-date: "Insert date here"
+author: "Zi Li"
+date: "3/22/2025"
 output: github_document
 ---
 
 ## Load Packages and Data  
 
-First, let's load the necessary packages:  
+load the necessary packages:  
 
 ```{r load-packages, message = FALSE}
 library(tidyverse) 
+
+# install.packages("skimr")
 library(skimr)
+
 ```
 
 Now, load the dataset. If your data isn't ready yet, you can leave `eval = FALSE` for now and update it when needed.  
 
 
-```{r load-data, message = FALSE, eval = FALSE}
+```{r load-data, message = FALSE, eval = TRUE}
 # Remove eval = FALSE or set it to TRUE once data is ready to be loaded
 uoe_art <- read_csv("data/uoe-art.csv")
+
 ```
 
 ## Exercise 9
 
-Let's start working with the **title** column by separating the title and the date:  
-
 ```{r separate-title-date, error = TRUE}
 uoe_art <- uoe_art %>%
-  separate(title, into = c("title", "date"), sep = "\\(") %>%
+  separate(title, into = c("title", "date"), sep = " \\(") %>%
   mutate(year = str_remove(date, "\\)") %>% as.numeric()) %>%
-  select(title, artist, year, ___)  # Fill in the missing variable!
+  select(title, artist, year, link)
+
 ```
-
-Make sure to replace `___` with the appropriate column name.  
-
-
+ 
 ## Exercise 10  
 
-*Write your answer here.*  
-
-Feel free to add code chunks as needed. Don't forget to label your code chunk.
-
+the warning is ok,because some date is NA, which is expected and normal.
 
 ## Exercise 11  
+```{r summary of the data frame}
+
+skim(uoe_art)
+
+# 2 pieces missing artist; 1579 pieces missing year.
+
+```
 
 
-*Continue with the same structure as above.*
 
-You're doing great—keep going! Follow the same format and add your response below.  
+## Exercises 12
+```{r histogram of years}
+ggplot(uoe_art, aes(x = year)) +
+  geom_histogram(binwidth = 22, fill = "pink", color = "blue") 
 
+# it seems like, there’s one weird outlier year that’s super low — like 1 or 2; 
+```
+## Exercises 13
+```{r find the correct year for it}
 
-## Additional Exercises  
+# check the year. I filter the year, and arrange the year from smallest to largest. 
+uoe_art %>%
+  filter(!is.na(year)) %>%
+  arrange(year) %>%
+  head(10) # Show the 10 earliest years
 
-Almost there! Keep building on your work and follow the same structure for any remaining exercises. Each exercise builds on the last, so take your time and make sure your code is working as expected.  
+uoe_art <- uoe_art %>%
+  mutate(year = if_else(title == "Death Mask",1964, year))
+
+```
+
+## Exercises 14
+```{r most commonly featured artist}
+
+uoe_art %>%
+  count(artist, sort = TRUE) %>% # sort=true show largest group at top, head(10): only want 10 largest group. 
+  head(10)
+
+# top one is "unknown", then Emma Gillies Plate. (never heard of her tho)
+
+```
+## Exercises 15
+```{r art pieces have the word “child” in their title}
+uoe_art %>% filter (str_detect(title, "Child") )%>%
+  count()
+
+# I see, we supposed to use the combination of filter() and str_detect(), no wonder I kept getting error. 
+# return 0, when use child; and 11 when use Child.
+
+# 11 art pieces have the word Child in their title. 
+
+```
+
